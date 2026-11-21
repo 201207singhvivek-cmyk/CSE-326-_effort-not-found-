@@ -1,6 +1,6 @@
 /**
  * ============================================================
- *  Subhasree Junction — Railway Platform Management Simulator
+ *  Railway Junction — Railway Platform Management Simulator
  *  Minimalist Collapsible Sections · 24-Hour Military Time
  *  Pure Vanilla JS · No Libraries
  * ============================================================

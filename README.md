@@ -1,4 +1,4 @@
-# CSE326 — Subhasree Junction Railway Platform Management Simulator
+# CSE326 — Railway Junction Platform Management Simulator
 
 > **Course**: Internet Programming (CSE326)  
 > **Repository**: `cse326_efffort_not_found`
