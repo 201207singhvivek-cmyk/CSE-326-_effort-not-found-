@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Railway Junction — Platform Management Simulator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-row">
+      <button type="button" id="sidebarToggle" class="sidebar-toggle-btn" aria-label="Toggle Sidebar" title="Toggle Navigation Sidebar">
+        <span class="toggle-icon">☰</span>
+        <span class="toggle-text">Sidebar</span>
+      </button>
+      <div class="station-title">
+        <h1>Railway Junction</h1>
+        <p class="subtitle">Platform Management Simulator</p>
+      </div>
+      <div class="clock-box">
+        <span class="clock-label">24-HR CLOCK</span>
+        <span id="liveClock">00:00:00</span>
+      </div>
+    </div>
+    <div class="dots-row">
+      <span class="dots-label">PLATFORMS:</span>
+      <div id="dotsContainer"></div>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <!-- Collapsible Sidebar -->
+    <aside id="sidebar" class="sidebar open">
+      <div class="sidebar-top">
+        <span class="sidebar-title">Station Menu</span>
+        <button type="button" id="sidebarCloseBtn" class="sidebar-close-btn" title="Collapse Sidebar">✕</button>
+      </div>
+
+      <div class="sidebar-section">
+        <span class="sidebar-heading">Navigation</span>
+        <nav class="sidebar-nav">
+          <a href="#secPlat" class="nav-item">
+            <span class="nav-icon">🚉</span>
+            <span class="nav-label">Platforms</span>
+            <span id="sidePlatBadge" class="nav-badge">5</span>
+          </a>
+          <a href="#secTraffic" class="nav-item">
+            <span class="nav-icon">⏱️</span>
+            <span class="nav-label">Traffic Forecast</span>
+          </a>
+          <a href="#secTrains" class="nav-item">
+            <span class="nav-icon">🚆</span>
+            <span class="nav-label">Active Trains</span>
+            <span id="sideTrainBadge" class="nav-badge">0</span>
+          </a>
+          <a href="#secAlloc" class="nav-item">
+            <span class="nav-icon">📋</span>
+            <span class="nav-label">Allocate Platform</span>
+          </a>
+          <a href="#secAdd" class="nav-item">
+            <span class="nav-icon">➕</span>
+            <span class="nav-label">Add Train</span>
+          </a>
+          <a href="#secDepart" class="nav-item">
+            <span class="nav-icon">⏱️</span>
+            <span class="nav-label">Delay &amp; Depart</span>
+          </a>
+          <a href="#secSchedule" class="nav-item">
+            <span class="nav-icon">📋</span>
+            <span class="nav-label">Master Schedule</span>
+          </a>
+        </nav>
+      </div>
+
+      <div class="sidebar-section">
+        <span class="sidebar-heading">Live Platform Summary</span>
+        <div class="sidebar-stats">
+          <div class="stat-card">
+            <span class="stat-num free" id="sideFreePlats">5</span>
+            <span class="stat-lbl">Free Platforms</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-num occ" id="sideOccPlats">0</span>
+            <span class="stat-lbl">Occupied</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Mobile Drawer Backdrop -->
+    <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
+    <!-- Main Content Area -->
+    <div class="content-area">
+      <main>
+        <!-- Banner -->
+        <div id="banner" class="banner hidden"></div>
+
+        <!-- S1: Platform Config -->
+        <details class="card" id="secPlat" open>
+          <summary>🚉 Platform Configuration <span id="platBadge" class="badge">5</span></summary>
+          <form id="platForm" class="inline-form">
+            <label for="platCount">Platforms (1–20):</label>
+            <input type="number" id="platCount" min="1" max="20" value="5">
+            <button type="submit" class="btn blue">Update</button>
+          </form>
+        </details>
+
+        <!-- S2: Traffic Forecast -->
+        <details class="card" id="secTraffic">
+          <summary>⏱️ Next 1-Hour Traffic <small>(<span id="windowText">08:00 – 09:00</span>)</small></summary>
+          <div class="inline-form" style="margin-bottom:10px">
+            <label for="simTime">Simulate 24h time:</label>
+            <input type="text" id="simTime" value="08:00" placeholder="HH:MM" maxlength="5" style="width: 85px;">
+            <button type="button" class="chip-btn" id="btnSimNow">Current Time</button>
+          </div>
+          <div class="bar-box">
+            <div class="bar-info">
+              <span id="barCount">0 trains</span>
+              <span id="barLoad">0 %</span>
+            </div>
+            <div class="bar-track"><div id="barFill" class="bar-fill"></div></div>
+          </div>
+        </details>
+
+        <!-- S3: Train Boxes -->
+        <details class="card" id="secTrains" open>
+          <summary>🚆 Active Trains <span id="trainBadge" class="badge">0</span></summary>
+          <div id="trainGrid" class="train-grid"></div>
+        </details>
+
+        <!-- S4: Allocate Platform -->
+        <details class="card" id="secAlloc" open>
+          <summary>📋 Allocate Platform</summary>
+          <form id="allocForm" class="inline-form">
+            <div class="field">
+              <label for="allocTrain">Select Train:</label>
+              <select id="allocTrain"><option value="">— pick train —</option></select>
+            </div>
+            <div class="field">
+              <label for="allocPlat">Select Platform:</label>
+              <select id="allocPlat"><option value="">— pick platform —</option></select>
+            </div>
+            <button type="submit" id="btnAllocSubmit" class="btn green">Allocate Platform</button>
+          </form>
+        </details>
+
+        <!-- S5: Add Train -->
+        <details class="card" id="secAdd" open>
+          <summary>➕ Add Train</summary>
+          <form id="addForm">
+            <div class="form-grid">
+              <div class="field">
+                <label for="tName">Name / Number:</label>
+                <input type="text" id="tName" placeholder="e.g. 12002 Shatabdi" required>
+              </div>
+              <div class="field">
+                <label for="tCat">Category:</label>
+                <select id="tCat">
+                  <option value="Passenger">🚆 Passenger</option>
+                  <option value="Goods">📦 Goods</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="tPri">Priority:</label>
+                <select id="tPri">
+                  <option value="1">P1 — VIP</option>
+                  <option value="2">P2 — Express</option>
+                  <option value="3" selected>P3 — Standard</option>
+                  <option value="4">P4 — Low</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="tStop">Stoppage:</label>
+                <select id="tStop">
+                  <option value="Quick Stop">⚡ Quick Stop</option>
+                  <option value="Originating">🏁 Originating</option>
+                  <option value="Long Stoppage">🔄 Long Stoppage</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="tArr">Arrival (24h):</label>
+                <input type="text" id="tArr" placeholder="HH:MM (e.g. 10:00)" maxlength="5" required>
+              </div>
+              <div class="field">
+                <label for="tDep">Departure (24h):</label>
+                <input type="text" id="tDep" placeholder="HH:MM (e.g. 10:30)" maxlength="5" required>
+              </div>
+              <div class="field">
+                <label for="tDelay">Delay (min):</label>
+                <input type="number" id="tDelay" value="0" min="0">
+              </div>
+            </div>
+            <div style="display:flex; gap:8px; margin-bottom:12px; align-items:center; flex-wrap:wrap;">
+              <span style="font-size:0.75rem; color:var(--muted); font-weight:600;">Quick Time Fill:</span>
+              <button type="button" class="chip-btn" id="btnNowAdd">Fill Current Time</button>
+              <button type="button" class="chip-btn" id="btnMorningAdd">10:00 → 10:30</button>
+              <button type="button" class="chip-btn" id="btnEveningAdd">18:00 → 18:30</button>
+            </div>
+            <button type="submit" class="btn blue">Add Train</button>
+          </form>
+        </details>
+
+        <!-- S6: Update / Depart -->
+        <details class="card" id="secDepart" open>
+          <summary>⏱️ Update Delay / Departure</summary>
+          <form id="updateForm" class="inline-form">
+            <div class="field">
+              <label for="updTrain">Select Train:</label>
+              <select id="updTrain"><option value="">— pick train —</option></select>
+            </div>
+            <div class="field">
+              <label for="updDelay">Delay (min):</label>
+              <input type="number" id="updDelay" min="0" placeholder="0">
+            </div>
+            <div class="field">
+              <label for="updLeft">Left at (24h):</label>
+              <input type="text" id="updLeft" placeholder="HH:MM (e.g. 10:35)" maxlength="5">
+            </div>
+            <button type="button" id="btnDelay" class="btn orange">Apply Delay</button>
+            <button type="button" id="btnLeft" class="btn red">Depart Train</button>
+          </form>
+        </details>
+
+        <!-- S7: Schedule Table -->
+        <details class="card" id="secSchedule" open>
+          <summary>📋 Master Schedule</summary>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pri</th><th>Cat</th><th>Stop</th><th>Train</th>
+                  <th>Arr</th><th>Dep</th><th>Left</th>
+                  <th>Delay</th><th>Plat</th><th>Status</th><th>Act</th>
+                </tr>
+              </thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+        </details>
+
+      </main>
+
+      <footer>
+        <p>Railway Junction · 24-Hour Format · Internet Programming</p>
+      </footer>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
